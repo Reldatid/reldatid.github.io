@@ -1,0 +1,106 @@
+body{
+  background-color: black;
+  font-family: 'Archivo Narrow', sans-serif;
+  padding: 0px;
+  margin: 0px;
+  border: 0px;
+}
+
+header{
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+.heading{
+  display: flex;
+  width: 100vw;
+  margin: 50px 0 0 0;
+  padding-left: 50px;
+  font-size: 30px;
+  color: #8FBB99;
+}
+
+header h1{
+  font-size: 100px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+article{
+  display: flex;
+  width: 100vw;
+  max-height: 250px;
+  height: 60vh;
+  align-items: center;
+  justify-content: center;
+  margin: 50px 0;
+  background-color: rgba(255,255,255,0.6);
+}
+
+.content{
+  max-width: 1000px;
+  width: 90%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+}
+
+img{
+  max-height: 100%;
+  max-width: 100%;
+}
+
+.image-aligner{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 5px;
+}
+
+.text{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+article h2{
+  text-decoration: underline;
+}
+
+#defaultCanvas0{
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -10;
+}
+
+.info{
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 30px;
+  margin-bottom: 30px;
+  text-align: center;
+  background-color: rgba(255,255,255,0.6);
+  color: rgb(35,35,35);
+}
+
+.info h2{
+  font-size: 30px;
+}
+
+#about-me p{
+  font-size: 20px;
+  text-align: left;
+}
+
+#import{
+  font-size: 25px;
+}
