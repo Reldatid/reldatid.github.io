@@ -1,3 +1,7 @@
+html {
+  scroll-behavior: smooth;
+}
+
 body{
   background-color: black;
   font-family: 'Archivo Narrow', sans-serif;
@@ -29,6 +33,48 @@ header h1{
   font-size: 100px;
   margin-bottom: 10px;
   text-align: center;
+}
+
+#page-scroll{
+  color: white;
+  font-size: 20px;
+}
+
+#scroll{
+  position: absolute;
+  bottom: 40px;
+  text-align: center;
+  font-size: 30px;
+}
+
+#chevron {
+  position: absolute;
+  bottom: 20px;
+  text-align: center;
+  padding: 2px;
+  margin-bottom: 3px;
+  height: 6px;
+  width: 50px;
+}
+#chevron:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 51%;
+  background: red;
+  transform: skew(0deg, 6deg);
+}
+#chevron:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 50%;
+  background: red;
+  transform: skew(0deg, -6deg);
 }
 
 .projects{
