@@ -67,7 +67,7 @@ function create ()
     ships.push(construction);
   }
 
-  for(x = 0; x < 40; x ++){
+  for(x = 0; x < 1; x ++){
     rock = this.add.polygon(Math.random()*sceneWidth, Math.random()*sceneHeight, octaRock);
     rock.isStroked = true;
     this.matter.add.gameObject(rock, { shape: { type: 'fromVerts', verts: octaRock, flagInternal: true } }).setSensor(true);
