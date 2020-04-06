@@ -59,7 +59,7 @@ function create ()
 
   this.matter.world.setBounds(0, 0, sceneWidth, sceneHeight);
 
-  for(x = 0; x < 5; x ++){
+  for(x = 0; x < 100; x ++){
     construction = this.add.polygon(x*20+100, 100, shipShape);
     construction.isStroked = true;
     this.matter.add.gameObject(construction, { shape: { type: 'fromVerts', verts: shipShape, flagInternal: true } });
