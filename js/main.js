@@ -37,7 +37,8 @@ window.onload = function () {
 const setupGui = () => {
   gui.add(settings, "ships", 1, 1000);
   gui.add(settings, "rocks", 1, 1000);
-  gui.add(settings, "shipFriction", 0, 1);
+  gui.add(settings, "shipFriction", 0, 0.5);
+  gui.add(settings, "thrust", 0, 1);
   gui.add(settings, "Apply");
   gui.add(settings, "Reset");
 }
@@ -145,21 +146,6 @@ function create ()
   line2 = new Phaser.Geom.Line( 0, centerY, this.game.config.width, centerY);
 
   shipCollisionDetection();
-
-  // unsubscribe = this.matterCollision.addOnCollideStart({
-  //   objectA: ships,
-  //   callback: eventData => {
-  //     const {bodyB, gameObjectB} = eventData;
-  //     if (gameObjectB) { //wrapping in null check in case I want to add more of this next check.
-  //       if (gameObjectB.entityType === "Rock") {
-  //         x = Math.floor(Math.random()*(sceneWidth-20) +10);
-  //         y = Math.floor(Math.random()*(sceneHeight-20) +10);
-  //         gameObjectB.setX(x);
-  //         gameObjectB.setY(y);
-  //       }
-  //     }
-  //   }
-  // });
 }
 
 
@@ -187,16 +173,11 @@ function update ()
       dif -= 2* Math.PI;
     }
     if (dif<0)
-      s.setAngularVelocity(s.body.angularVelocity*0.9 + 0.01);
+      s.setAngularVelocity(s.body.angularVelocity + controller.thrust*0.1);
     if (dif>0)
-      s.setAngularVelocity(s.body.angularVelocity*0.9 - 0.01);
+      s.setAngularVelocity(s.body.angularVelocity- controller.thrust*0.1);
     s.thrust(controller.thrust);
   })
-
-  // rockAngle = Phaser.Math.Angle.Between(rock.x, rock.y, centerX, centerY);
-  // forceX = 10*Math.pow((centerX - rock.x)/300, 3);
-  // forceY = 10*Math.pow((centerY - rock.y)/300, 3);
-  // rock.applyForce({x:forceX, y:forceY})
 }
 
 let addShip = () => {
