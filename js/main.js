@@ -27,10 +27,75 @@ var config = {
   }
 };
 
-var game = new Phaser.Game(config);
+window.onload = function () {
+  game = new Phaser.Game(config);
+  gui = new dat.GUI();
+
+  setupGui();
+}
+
+const setupGui = () => {
+  gui.add(settings, "ships", 1, 1000);
+  gui.add(settings, "rocks", 1, 1000);
+  gui.add(settings, "shipFriction", 0, 1);
+  gui.add(settings, "Apply");
+  gui.add(settings, "Reset");
+}
+
+const settings = {
+  ships: 100,  // These number variables will cause a GUI slider element to be shown
+  rocks: 40,
+  shipFriction: 0.01,
+  thrust: 0.1,
+  "Apply": function(){
+    controller.sync();
+
+    //add or remove ships
+    while(ships.length < settings.ships){
+      addShip();
+      shipCollisionDetection();
+    }
+    while(ships.length > settings.ships){
+      ships.pop().destroy();
+    }
+
+    //add or remove rocks
+    while(rocks.length < settings.rocks){
+      addRock();
+    }
+    while(rocks.length > settings.rocks){
+      rocks.pop().destroy();
+    }
+
+    //apply friction
+    _.each(ships, function(s){
+      s.body.frictionAir = controller.shipFriction;
+    });
+  },
+  "Reset": function(){
+    scene.scene.restart();
+  }
+}
+
+const controller = {
+  ships: 100,
+  rocks: 40,
+  shipFriction: 0.01,
+  thrust: 0.1,
+
+  sync: () => {
+    controller.ships = settings.ships;
+    controller.rocks = settings.rocks;
+    controller.shipFriction = settings.shipFriction;
+    controller.thrust = settings.thrust;
+  }
+}
+
+let game;
+let gui;
 let scene;
-const sceneWidth = game.config.width*2;
-const sceneHeight = game.config.height*2;
+const sceneWidth = window.innerWidth*2;
+const sceneHeight = window.innerHeight*2;
 
 const centerX = sceneWidth/2;
 const centerY = sceneHeight/2;
@@ -38,74 +103,68 @@ let cursors;
 let graphics;
 
 let ship, line, line2, rock, angle;
+let shipShape = '0 0 20 10 0 20 5 10';
+let octaRock = '20 10 17.071 17.071 10 20 2.929 17.071 0 10 2.929 2.929 10 0 17.071 2.929'
+
 let ships = [];
 let rocks = [];
 let lines = [];
 
+let unsubscribe = ()=>{};
+
 function preload ()
 {
-  scene = game.scene.scenes[0];
-  graphics = this.add.graphics();
-  graphics.lineStyle(2, 0xffff00);
 }
 
 function create ()
 {
+  ships = [];
+  rocks = [];
+  lines = [];
+
+
+  scene = game.scene.scenes[0];
+  graphics = this.add.graphics();
+  graphics.lineStyle(2, 0xffff00);
+
   game.scene.scenes[0].cameras.main.zoom = 0.5;
   game.scene.scenes[0].cameras.main.useBounds = true;
   cursors = this.input.keyboard.createCursorKeys();
-  let shipShape = '0 0 20 10 0 20 5 10';2.929
-  let octaRock = '20 10 17.071 17.071 10 20 2.929 17.071 0 10 2.929 2.929 10 0 17.071 2.929'
 
   this.matter.world.setBounds(0, 0, sceneWidth, sceneHeight);
 
-  for(x = 0; x < 100; x ++){
-    construction = this.add.polygon(x*20+100, 100, shipShape);
-    construction.isStroked = true;
-    this.matter.add.gameObject(construction, { shape: { type: 'fromVerts', verts: shipShape, flagInternal: true } });
-    construction.setMass(500);
-    ships.push(construction);
+  for(x = 0; x < controller.ships; x ++){
+    addShip();
   }
 
-  for(x = 0; x < 1; x ++){
-    rock = this.add.polygon(Math.random()*sceneWidth, Math.random()*sceneHeight, octaRock);
-    rock.isStroked = true;
-    this.matter.add.gameObject(rock, { shape: { type: 'fromVerts', verts: octaRock, flagInternal: true } }).setSensor(true);
-    rock.setMass(300);
-    rock.entityType = 'Rock';
-    rocks.push(rock);
+  for(x = 0; x < controller.rocks; x ++){
+    addRock();
   }
-
-
-
-  // dot = this.add.circle(centerX, centerY, 30);
-  // dot.isStroked = true;
-  // this.matter.add.gameObject(dot, { shape: { type: 'circle' } });
 
   line = new Phaser.Geom.Line( centerX, 0, centerX, this.game.config.height);
   line2 = new Phaser.Geom.Line( 0, centerY, this.game.config.width, centerY);
 
-  this.matterCollision.addOnCollideStart({
-    objectA: ships,
-    callback: eventData => {
-      const {bodyB, gameObjectB} = eventData;
-      if (gameObjectB) { //wrapping in null check in case I want to add more of this next check.
-        if (gameObjectB.entityType === "Rock") {
-          x = Math.floor(Math.random()*(sceneWidth-20) +10);
-          y = Math.floor(Math.random()*(sceneHeight-20) +10);
-          gameObjectB.setX(x);
-          gameObjectB.setY(y);
-        }
-      }
-    }
-  });
+  shipCollisionDetection();
+
+  // unsubscribe = this.matterCollision.addOnCollideStart({
+  //   objectA: ships,
+  //   callback: eventData => {
+  //     const {bodyB, gameObjectB} = eventData;
+  //     if (gameObjectB) { //wrapping in null check in case I want to add more of this next check.
+  //       if (gameObjectB.entityType === "Rock") {
+  //         x = Math.floor(Math.random()*(sceneWidth-20) +10);
+  //         y = Math.floor(Math.random()*(sceneHeight-20) +10);
+  //         gameObjectB.setX(x);
+  //         gameObjectB.setY(y);
+  //       }
+  //     }
+  //   }
+  // });
 }
 
 
 function update ()
 {
-
-
   _.each(ships, function(s) {
     let target;
     let shortDistance = 999999;
@@ -128,14 +187,51 @@ function update ()
       dif -= 2* Math.PI;
     }
     if (dif<0)
-      s.setAngularVelocity(s.body.angularVelocity + 0.01);
+      s.setAngularVelocity(s.body.angularVelocity*0.9 + 0.01);
     if (dif>0)
-      s.setAngularVelocity(s.body.angularVelocity - 0.01);
-    s.thrust(0.1);
+      s.setAngularVelocity(s.body.angularVelocity*0.9 - 0.01);
+    s.thrust(controller.thrust);
   })
 
   // rockAngle = Phaser.Math.Angle.Between(rock.x, rock.y, centerX, centerY);
   // forceX = 10*Math.pow((centerX - rock.x)/300, 3);
   // forceY = 10*Math.pow((centerY - rock.y)/300, 3);
   // rock.applyForce({x:forceX, y:forceY})
+}
+
+let addShip = () => {
+  construction = scene.add.polygon(Math.random()*sceneWidth, Math.random()*sceneHeight, shipShape);
+  construction.isStroked = true;
+  scene.matter.add.gameObject(construction, { shape: { type: 'fromVerts', verts: shipShape, flagInternal: true } });
+  construction.setMass(500).setRotation( Math.random()*2*Math.PI - Math.PI );
+  construction.body.frictionAir = controller.shipFriction;
+  ships.push(construction);
+}
+
+let shipCollisionDetection = () => {
+  unsubscribe();
+  unsubscribe = scene.matterCollision.addOnCollideStart({
+    objectA: ships,
+    callback: eventData => {
+      const {bodyB, gameObjectB} = eventData;
+      if (gameObjectB) { //wrapping in null check in case I want to add more of this next check.
+        if (gameObjectB.entityType === "Rock") {
+          x = Math.floor(Math.random()*(sceneWidth-20) +10);
+          y = Math.floor(Math.random()*(sceneHeight-20) +10);
+          gameObjectB.setX(x);
+          gameObjectB.setY(y);
+        }
+      }
+    }
+  });
+}
+
+let addRock = () => {
+  rock = scene.add.polygon(Math.random()*sceneWidth, Math.random()*sceneHeight, octaRock);
+  rock.isStroked = true;
+  scene.matter.add.gameObject(rock, { shape: { type: 'fromVerts', verts: octaRock, flagInternal: true } });
+  rock.setMass(300);
+  rock.setSensor(true);
+  rock.entityType = 'Rock';
+  rocks.push(rock);
 }
